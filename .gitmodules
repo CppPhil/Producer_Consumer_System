@@ -1,0 +1,3 @@
+[submodule "external/pthreads"]
+	path = external/pthreads
+	url = git@github.com:BrianGladman/pthreads.git
