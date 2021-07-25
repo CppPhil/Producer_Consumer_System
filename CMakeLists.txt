@@ -12,11 +12,13 @@ set(APP_NAME consumer_producer_app)
 
 set(
   HEADERS
-  include/main.h)
+  include/byte.h
+  include/ring_buffer.h)
 
 set(
   SOURCES
-  src/main.c)
+  src/main.c
+  src/ring_buffer.c)
 
 add_executable(${APP_NAME} ${HEADERS} ${SOURCES})
 

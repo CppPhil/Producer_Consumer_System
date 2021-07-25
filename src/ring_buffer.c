@@ -4,8 +4,6 @@
 
 #include "ring_buffer.h"
 
-// TODO: make this thread safe.
-
 const char* ringBufferStatesCodeToString(RingBufferStatusCode statusCode)
 {
   switch (statusCode) {
@@ -23,6 +21,8 @@ const char* ringBufferStatesCodeToString(RingBufferStatusCode statusCode)
     return "Could not wait on condition variable.";
   case RB_FAILURE_TO_SIGNAL_CONDVAR:
     return "Could not signal condition variable.";
+  case RB_INVALID_ARGUMENT:
+    return "A parameter was supplied with an invalid argument.";
   default: break;
   }
 
@@ -35,7 +35,8 @@ typedef struct {
   byte*  in;         /*!< The write pointer used to write to the buffer */
   byte*  out;        /*!< The read pointer used to read from the buffer */
   size_t count; /*!< Count representing the amount of bytes still to be read
-                   from the buffer */
+                 *    from the buffer
+                 **/
   pthread_mutex_t mutex;
   pthread_cond_t  conditionVariable;
 } RingBufferImpl;
@@ -82,7 +83,7 @@ RingBufferStatusCode ringBufferFree(RingBuffer* ringBuffer)
 {
   RingBufferImpl* rb = impl(ringBuffer);
 
-  if (rb == NULL) { return; }
+  if (rb == NULL) { return RB_INVALID_ARGUMENT; }
 
   if (pthread_mutex_destroy(&rb->mutex) != 0) {
     free(rb->buffer);
@@ -121,7 +122,7 @@ RingBufferStatusCode ringBufferWrite(RingBuffer* ringBuffer, byte toWrite)
     }
   }
 
-  rb->in = toWrite;
+  *rb->in = toWrite;
   ++rb->count;
   advancePointer(rb, &rb->in);
 

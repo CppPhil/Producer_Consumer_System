@@ -14,7 +14,8 @@ typedef enum {
   RB_FAILURE_TO_INIT_CONDVAR,
   RB_FAILURE_TO_DESTROY_CONDVAR,
   RB_FAILURE_TO_WAIT_ON_CONDVAR,
-  RB_FAILURE_TO_SIGNAL_CONDVAR
+  RB_FAILURE_TO_SIGNAL_CONDVAR,
+  RB_INVALID_ARGUMENT
 } RingBufferStatusCode;
 
 const char* ringBufferStatesCodeToString(RingBufferStatusCode statusCode);
