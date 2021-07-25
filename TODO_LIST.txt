@@ -3,3 +3,5 @@ Read the amount of consumer and producer threads from the command line as well a
 Spawn the producer and consumer threads.
 
 Have a controller thread.
+
+Make this run on GNU/Linux.
