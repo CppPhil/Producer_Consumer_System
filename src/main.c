@@ -1,10 +1,24 @@
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "cmd_args.h"
 #include "ring_buffer.h"
 
-int main(void)
+int main(int argc, char** argv)
 {
+  const CmdArgs commandLineArguments = parseCmdArgs(argc, argv);
+
+  if (!commandLineArguments.isOk) { return EXIT_FAILURE; }
+
+  printf("producerCount: %" PRId32 "\n", commandLineArguments.producerCount);
+  printf("consumerCount: %" PRId32 "\n", commandLineArguments.consumerCount);
+  printf(
+    "producerSleepTime: %" PRId32 "\n", commandLineArguments.producerSleepTime);
+  printf(
+    "consumerSleepTime: %" PRId32 "\n", commandLineArguments.consumerSleepTime);
+  printf("\n");
+
   RingBuffer*          ringBuffer     = NULL;
   const size_t         ringBufferSize = 20;
   RingBufferStatusCode statusCode

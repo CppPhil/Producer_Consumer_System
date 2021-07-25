@@ -13,10 +13,12 @@ set(APP_NAME consumer_producer_app)
 set(
   HEADERS
   include/byte.h
+  include/cmd_args.h
   include/ring_buffer.h)
 
 set(
   SOURCES
+  src/cmd_args.c
   src/main.c
   src/ring_buffer.c)
 
