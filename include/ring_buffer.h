@@ -4,8 +4,7 @@
 
 #include "byte.h"
 
-typedef enum
-{
+typedef enum {
   RB_OK,
   RB_NOMEM,
   RB_FAILURE_TO_INIT_MUTEX,
@@ -22,7 +21,9 @@ const char* ringBufferStatesCodeToString(RingBufferStatusCode statusCode);
 
 typedef struct RingBufferOpaque RingBuffer;
 
-RingBufferStatusCode ringBufferCreate(size_t byteCount, RingBuffer** ringBuffer);
+RingBufferStatusCode ringBufferCreate(
+  size_t       byteCount,
+  RingBuffer** ringBuffer);
 
 RingBufferStatusCode ringBufferFree(RingBuffer* ringBuffer);
 
