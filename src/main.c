@@ -5,10 +5,7 @@
 
 #include "main.h"
 
-int main(void)
-{
-  return f();
-}
+int main(void) { return f(); }
 
 static void* threadFunction(void* arg)
 {
@@ -21,15 +18,15 @@ int f()
   printf("f called\n");
 
   pthread_t thread;
-  const int statusCode = pthread_create(
-    &thread, NULL, &threadFunction, (void*)1);
+  const int statusCode
+    = pthread_create(&thread, NULL, &threadFunction, (void*)1);
 
   if (statusCode != 0) {
     fprintf(stderr, "Could not create thread\n");
     return EXIT_FAILURE;
   }
 
-  void*threadExitStatus = NULL;
+  void* threadExitStatus = NULL;
 
   if (pthread_join(thread, &threadExitStatus) != 0) {
     fprintf(stderr, "Failure to join the thread.\n");

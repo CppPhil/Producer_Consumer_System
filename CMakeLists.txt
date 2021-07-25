@@ -36,5 +36,5 @@ if (WIN32)
   target_link_libraries(
     ${APP_NAME}
     PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/build/PTHREADS-BUILT/lib/pthreadVC3-w64.lib)
+    ${CMAKE_CURRENT_SOURCE_DIR}/build/PTHREADS-BUILT/lib/pthreadVC3.lib)
 endif()

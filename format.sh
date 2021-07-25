@@ -19,7 +19,7 @@ format () {
   cd "$1"
   delete_file_if_exists ./.clang-format
   cp "$DOT_CLANG_FORMAT" ./.clang-format
-  find . -name '*.cpp' -o -name '*.hh' -o -name '*.hpp' -o -name '*.h' | xargs clang-format -i
+  find . -name '*.c' -o -name '*.h' | xargs clang-format -i
   rm -f ./.clang-format
 }
 

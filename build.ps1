@@ -6,10 +6,12 @@ if (-Not (Test-Path -Path $build_dir)) {
   mkdir $build_dir
 }
 
+.\clean.ps1
+
 Set-Location .\external\pthreads
 
 if ($IsWindows) {
-  & cmd.exe /c "`"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat`" && nmake VC install"
+  & cmd.exe /c "`"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat`" && nmake all install"
 
   if (-Not ($LASTEXITCODE -eq "0")) {
     Write-Output "Could not run nmake!"
@@ -49,7 +51,7 @@ Pop-Location
 Push-Location .
 
 Set-Location $build_dir
-Copy-Item -Path ".\PTHREADS-BUILT\bin\pthreadVC3-w64.dll" -Destination ".\Debug\pthreadVC3-w64.dll"
+Copy-Item -Path ".\PTHREADS-BUILT\bin\pthreadVC3.dll" -Destination ".\Debug\pthreadVC3.dll"
 
 Write-Output ""
 Write-Output "~~~~~~~~~~~~ Completed debug build ~~~~~~~~~~~~"
@@ -78,12 +80,18 @@ Pop-Location
 Push-Location .
 
 Set-Location $build_dir
-Copy-Item -Path ".\PTHREADS-BUILT\bin\pthreadVC3-w64.dll" -Destination ".\Release\pthreadVC3-w64.dll"
+Copy-Item -Path ".\PTHREADS-BUILT\bin\pthreadVC3.dll" -Destination ".\Release\pthreadVC3.dll"
 
 Write-Output ""
 Write-Output "~~~~~~~~~~~~ Completed release build ~~~~~~~~~~~~"
 Write-Output ""
 Write-Output ""
+
+Pop-Location
+Push-Location .
+
+Set-Location .\external\pthreads
+& cmd.exe /c "`"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat`" && nmake realclean"
 
 Pop-Location
 exit 0
