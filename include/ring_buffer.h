@@ -14,11 +14,13 @@ typedef enum {
   RB_FAILURE_TO_INIT_CONDVAR,
   RB_FAILURE_TO_DESTROY_CONDVAR,
   RB_FAILURE_TO_WAIT_ON_CONDVAR,
-  RB_FAILURE_TO_SIGNAL_CONDVAR,
-  RB_INVALID_ARGUMENT
+  RB_FAILURE_TO_SIGNAL_CONDVAR
 } RingBufferStatusCode;
 
-const char* ringBufferStatesCodeToString(RingBufferStatusCode statusCode);
+#define RB_SUCCESS(enm) ((enm) == RB_OK)
+#define RB_FAILURE(enm) ((enm) != RB_OK)
+
+const char* ringBufferStatusCodeToString(RingBufferStatusCode statusCode);
 
 typedef struct RingBufferOpaque RingBuffer;
 
