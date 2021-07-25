@@ -6,12 +6,12 @@ if (-Not (Test-Path -Path $build_dir)) {
   mkdir $build_dir
 }
 
-.\clean.ps1
+.\clean.ps1 2>&1 | out-null
 
 Set-Location .\external\pthreads
 
 if ($IsWindows) {
-  & cmd.exe /c "`"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat`" && nmake all install"
+  & cmd.exe /c "`"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat`" && nmake VC VC-static-debug install"
 
   if (-Not ($LASTEXITCODE -eq "0")) {
     Write-Output "Could not run nmake!"
@@ -91,7 +91,7 @@ Pop-Location
 Push-Location .
 
 Set-Location .\external\pthreads
-& cmd.exe /c "`"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat`" && nmake realclean"
+& cmd.exe /c "`"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat`" && nmake realclean" 2>&1 | out-null
 
 Pop-Location
 exit 0
