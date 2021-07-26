@@ -12,8 +12,11 @@ static char toUpper(char character)
   return (char)uc;
 }
 
-static int
-producerThreadFunction(RingBuffer* ringBuffer, int32_t sleepTimeSeconds, int id)
+static int producerThreadFunction(
+  RingBuffer* ringBuffer,
+  int32_t     sleepTimeSeconds,
+  int         id,
+  Thread*     self)
 {
   static const char   alphabet[]   = "abcdefghijklmnopqrstuvwxyz";
   static const size_t alphabetSize = sizeof(alphabet) - 1;
@@ -21,6 +24,13 @@ producerThreadFunction(RingBuffer* ringBuffer, int32_t sleepTimeSeconds, int id)
   size_t index = 0;
 
   for (;;) {
+    bool       shouldShutdown;
+    const bool ok = threadShouldShutdown(self, &shouldShutdown);
+
+    if (!ok) { return EXIT_FAILURE; }
+
+    if (shouldShutdown) { break; }
+
     const byte byteToWrite
       = (id & 1) == 0 ? alphabet[index] : toUpper(alphabet[index]);
 

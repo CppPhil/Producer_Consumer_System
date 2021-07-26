@@ -6,9 +6,7 @@ if (-Not (Test-Path -Path $build_dir)) {
   mkdir $build_dir
 }
 
-Set-Location $build_dir
-
-& .\Debug\consumer_producer_app.exe @args
+& .\$build_dir\Debug\consumer_producer_app.exe @args
 
 if (-Not ($LASTEXITCODE -eq "0")) {
   Write-Output ".\Debug\consumer_producer_app.exe exited with a non-zero exit code!"

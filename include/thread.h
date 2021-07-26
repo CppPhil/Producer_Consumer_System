@@ -7,8 +7,11 @@
 
 typedef struct ThreadOpaque Thread;
 
-typedef int (
-  *ThreadFunction)(RingBuffer* ringBuffer, int32_t sleepTimeSeconds, int id);
+typedef int (*ThreadFunction)(
+  RingBuffer* ringBuffer,
+  int32_t     sleepTimeSeconds,
+  int         id,
+  Thread*     self);
 
 Thread* threadCreate(
   ThreadFunction function,
@@ -17,4 +20,8 @@ Thread* threadCreate(
   int            id);
 
 bool threadFree(Thread* thread, int* threadExitStatus);
+
+bool threadRequestShutdown(Thread* thread);
+
+bool threadShouldShutdown(Thread* thread, bool* shouldShutDown);
 #endif /* INCG_THREAD_H */
