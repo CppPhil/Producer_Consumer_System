@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "byte.h"
 #include "consumer.h"
+#include "ring_buffer.h"
 #include "sleep_thread.h"
 
 static int consumerThreadFunction(
@@ -20,11 +22,13 @@ static int consumerThreadFunction(
 
     byte                       byteJustRead;
     const RingBufferStatusCode statusCode
-      = ringBufferRead(ringBuffer, &byteJustRead, id);
+      = ringBufferRead(ringBuffer, &byteJustRead, id, self);
 
-    printf("Consumer (tid: %d) just read %c.\n", id, (char)byteJustRead);
+    if (statusCode == RB_THREAD_SHOULD_SHUTDOWN) { break; }
 
     if (RB_FAILURE(statusCode)) { return EXIT_FAILURE; }
+
+    printf("Consumer (tid: %d) just read %c.\n", id, byteJustRead);
 
     sleepThread(sleepTimeSeconds);
   }

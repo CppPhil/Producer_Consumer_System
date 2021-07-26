@@ -28,6 +28,11 @@ const char* ringBufferStatusCodeToString(RingBufferStatusCode statusCode)
     return "Could not wait on condition variable.";
   case RB_FAILURE_TO_SIGNAL_CONDVAR:
     return "Could not signal condition variable.";
+  case RB_THREAD_SHOULD_SHUTDOWN:
+    return "The thread operating on this ring buffer should shut down.";
+  case RB_FAILURE_TO_DETERMINE_SHUTDOWN_STATE:
+    return "Could not determine shutdown state for the thread operating on "
+           "this ring buffer.";
   default: break;
   }
 
@@ -115,8 +120,11 @@ static void advancePointer(RingBufferImpl* rb, byte** ptr)
   }
 }
 
-RingBufferStatusCode
-ringBufferWrite(RingBuffer* ringBuffer, byte toWrite, int threadId)
+RingBufferStatusCode ringBufferWrite(
+  RingBuffer* ringBuffer,
+  byte        toWrite,
+  int         threadId,
+  Thread*     self)
 {
   RingBufferImpl* rb = impl(ringBuffer);
 
@@ -128,6 +136,25 @@ ringBufferWrite(RingBuffer* ringBuffer, byte toWrite, int threadId)
     toWrite);
 
   while (rb->count >= rb->bufferSize) {
+    bool       shouldShutdown;
+    const bool ok = threadShouldShutdown(self, &shouldShutdown);
+
+    if (!ok) {
+      if (pthread_mutex_unlock(&rb->mutex) != 0) {
+        return RB_FAILURE_TO_UNLOCK_MUTEX;
+      }
+
+      return RB_FAILURE_TO_DETERMINE_SHUTDOWN_STATE;
+    }
+
+    if (shouldShutdown) {
+      if (pthread_mutex_unlock(&rb->mutex) != 0) {
+        return RB_FAILURE_TO_UNLOCK_MUTEX;
+      }
+
+      return RB_THREAD_SHOULD_SHUTDOWN;
+    }
+
     RB_PRINTLN(
       "Producer (tid: %d) has to wait for space to become free, trying to "
       "write %c",
@@ -162,8 +189,11 @@ ringBufferWrite(RingBuffer* ringBuffer, byte toWrite, int threadId)
   return RB_OK;
 }
 
-RingBufferStatusCode
-ringBufferRead(RingBuffer* ringBuffer, byte* byteRead, int threadId)
+RingBufferStatusCode ringBufferRead(
+  RingBuffer* ringBuffer,
+  byte*       byteRead,
+  int         threadId,
+  Thread*     self)
 {
   RingBufferImpl* rb = impl(ringBuffer);
 
@@ -172,6 +202,25 @@ ringBufferRead(RingBuffer* ringBuffer, byte* byteRead, int threadId)
   RB_PRINTLN("Consumer (tid: %d) got the mutex and tries to read.", threadId);
 
   while (rb->count == 0) {
+    bool       shouldShutdown;
+    const bool ok = threadShouldShutdown(self, &shouldShutdown);
+
+    if (!ok) {
+      if (pthread_mutex_unlock(&rb->mutex) != 0) {
+        return RB_FAILURE_TO_UNLOCK_MUTEX;
+      }
+
+      return RB_FAILURE_TO_DETERMINE_SHUTDOWN_STATE;
+    }
+
+    if (shouldShutdown) {
+      if (pthread_mutex_unlock(&rb->mutex) != 0) {
+        return RB_FAILURE_TO_UNLOCK_MUTEX;
+      }
+
+      return RB_THREAD_SHOULD_SHUTDOWN;
+    }
+
     RB_PRINTLN(
       "Consumer (tid: %d) has to wait for data to be written while trying to "
       "read.",
@@ -205,5 +254,16 @@ ringBufferRead(RingBuffer* ringBuffer, byte* byteRead, int threadId)
     byteJustRead);
 
   *byteRead = byteJustRead;
+  return RB_OK;
+}
+
+RingBufferStatusCode ringBufferShutdown(RingBuffer* ringBuffer)
+{
+  RingBufferImpl* rb = impl(ringBuffer);
+
+  if (pthread_cond_broadcast(&rb->conditionVariable) != 0) {
+    return RB_FAILURE_TO_SIGNAL_CONDVAR;
+  }
+
   return RB_OK;
 }

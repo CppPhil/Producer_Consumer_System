@@ -3,6 +3,7 @@
 
 #include <pthread.h>
 
+#include "ring_buffer.h"
 #include "thread.h"
 
 typedef struct {

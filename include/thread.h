@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "ring_buffer.h"
+typedef struct RingBufferOpaque RingBuffer;
 
 typedef struct ThreadOpaque Thread;
 

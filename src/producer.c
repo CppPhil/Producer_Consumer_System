@@ -2,7 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "byte.h"
 #include "producer.h"
+#include "ring_buffer.h"
 #include "sleep_thread.h"
 
 static char toUpper(char character)
@@ -35,11 +37,13 @@ static int producerThreadFunction(
       = (id & 1) == 0 ? alphabet[index] : toUpper(alphabet[index]);
 
     const RingBufferStatusCode statusCode
-      = ringBufferWrite(ringBuffer, byteToWrite, id);
+      = ringBufferWrite(ringBuffer, byteToWrite, id, self);
 
-    printf("Producer (tid: %d) just wrote %c.\n", id, byteToWrite);
+    if (statusCode == RB_THREAD_SHOULD_SHUTDOWN) { break; }
 
     if (RB_FAILURE(statusCode)) { return EXIT_FAILURE; }
+
+    printf("Producer (tid: %d) just wrote %c.\n", id, byteToWrite);
 
     sleepThread(sleepTimeSeconds);
 

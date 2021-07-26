@@ -3,6 +3,7 @@
 #include <stddef.h>
 
 #include "byte.h"
+#include "thread.h"
 
 typedef enum {
   RB_OK,
@@ -14,7 +15,9 @@ typedef enum {
   RB_FAILURE_TO_INIT_CONDVAR,
   RB_FAILURE_TO_DESTROY_CONDVAR,
   RB_FAILURE_TO_WAIT_ON_CONDVAR,
-  RB_FAILURE_TO_SIGNAL_CONDVAR
+  RB_FAILURE_TO_SIGNAL_CONDVAR,
+  RB_THREAD_SHOULD_SHUTDOWN,
+  RB_FAILURE_TO_DETERMINE_SHUTDOWN_STATE
 } RingBufferStatusCode;
 
 #define RB_SUCCESS(enm) ((enm) == RB_OK)
@@ -30,9 +33,17 @@ RingBufferStatusCode ringBufferCreate(
 
 RingBufferStatusCode ringBufferFree(RingBuffer* ringBuffer);
 
-RingBufferStatusCode
-ringBufferWrite(RingBuffer* ringBuffer, byte toWrite, int threadId);
+RingBufferStatusCode ringBufferWrite(
+  RingBuffer* ringBuffer,
+  byte        toWrite,
+  int         threadId,
+  Thread*     self);
 
-RingBufferStatusCode
-ringBufferRead(RingBuffer* ringBuffer, byte* byteRead, int threadId);
+RingBufferStatusCode ringBufferRead(
+  RingBuffer* ringBuffer,
+  byte*       byteRead,
+  int         threadId,
+  Thread*     self);
+
+RingBufferStatusCode ringBufferShutdown(RingBuffer* ringBuffer);
 #endif /* INCG_INCG_RING_BUFFER_H */

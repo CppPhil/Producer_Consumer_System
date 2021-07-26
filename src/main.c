@@ -106,6 +106,10 @@ int main(int argc, char** argv)
     couldShutdownThreads = threadRequestShutdown(consumers[cons]);
   }
 
+  statusCode = ringBufferShutdown(ringBuffer);
+
+  if (RB_FAILURE(statusCode)) { goto error; }
+
   if (!couldShutdownThreads) { goto error; }
 
   int programExitStatus = EXIT_SUCCESS;
