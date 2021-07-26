@@ -5,6 +5,10 @@
 
 #include "ring_buffer.h"
 
+/*!
+ * \def RB_PRINTLN
+ * \brief Macro to print a line form the ring buffer implementation.
+ **/
 #ifdef RB_IO
 #define RB_PRINTLN(fmtStr, ...) printf("RingBuffer: " fmtStr "\n", __VA_ARGS__)
 #else
@@ -39,6 +43,9 @@ const char* ringBufferStatusCodeToString(RingBufferStatusCode statusCode)
   return "An unknown error occurred.";
 }
 
+/*!
+ * \brief Implementation type of the ring buffer
+ **/
 typedef struct {
   byte*  buffer;     /*!< Buffer to hold the data written by the threads */
   size_t bufferSize; /*!< Size of the buffer in bytes */
@@ -93,6 +100,7 @@ RingBufferStatusCode ringBufferFree(RingBuffer* ringBuffer)
 {
   RingBufferImpl* rb = impl(ringBuffer);
 
+  // If the pointer is NULL -> Do nothing (that's okay, it's no error).
   if (rb == NULL) { return RB_OK; }
 
   if (pthread_mutex_destroy(&rb->mutex) != 0) {
@@ -112,10 +120,17 @@ RingBufferStatusCode ringBufferFree(RingBuffer* ringBuffer)
   return RB_OK;
 }
 
+/*!
+ * \brief Helper function to advance a pointer in the ring buffer.
+ * \param rb The ring buffer implementation.
+ * \param ptr A pointer to the pointer to advance.
+ **/
 static void advancePointer(RingBufferImpl* rb, byte** ptr)
 {
+  // If we're at the end -> go to the front.
   if (*ptr == (rb->buffer + rb->bufferSize - 1)) { *ptr = rb->buffer; }
   else {
+    // Otherwise -> Just bump the pointer.
     ++*ptr;
   }
 }
@@ -135,11 +150,15 @@ RingBufferStatusCode ringBufferWrite(
     threadId,
     toWrite);
 
+  // Condition variable loop.
+  // Wait for slots in the ring buffer to become free.
   while (rb->count >= rb->bufferSize) {
     bool       shouldShutdown;
     const bool ok = threadShouldShutdown(self, &shouldShutdown);
 
+    // If we couldn't query the shutdown state -> error.
     if (!ok) {
+      // Give back the mutex, because the condition variable will have reacquired it.
       if (pthread_mutex_unlock(&rb->mutex) != 0) {
         return RB_FAILURE_TO_UNLOCK_MUTEX;
       }
@@ -147,11 +166,15 @@ RingBufferStatusCode ringBufferWrite(
       return RB_FAILURE_TO_DETERMINE_SHUTDOWN_STATE;
     }
 
+    // If we could got the shutdown state and we should shut down.
+    // -> Shut down.
     if (shouldShutdown) {
+      // Release the mutex because the condition variable had reacquired it.
       if (pthread_mutex_unlock(&rb->mutex) != 0) {
         return RB_FAILURE_TO_UNLOCK_MUTEX;
       }
 
+      // Signal shut down to the thread.
       return RB_THREAD_SHOULD_SHUTDOWN;
     }
 
@@ -161,13 +184,15 @@ RingBufferStatusCode ringBufferWrite(
       threadId,
       toWrite);
 
+    // Go wait on the condition variable.
     if (pthread_cond_wait(&rb->conditionVariable, &rb->mutex) != 0) {
       return RB_FAILURE_TO_WAIT_ON_CONDVAR;
     }
   }
 
+  // Write.
   *rb->in = toWrite;
-  ++rb->count;
+  ++rb->count; // 1 more byte to read.
   advancePointer(rb, &rb->in);
 
   RB_PRINTLN(
@@ -179,6 +204,7 @@ RingBufferStatusCode ringBufferWrite(
     return RB_FAILURE_TO_UNLOCK_MUTEX;
   }
 
+  // Wake everyone who is waiting on the condition variable.
   if (pthread_cond_broadcast(&rb->conditionVariable) != 0) {
     return RB_FAILURE_TO_SIGNAL_CONDVAR;
   }
@@ -201,11 +227,15 @@ RingBufferStatusCode ringBufferRead(
 
   RB_PRINTLN("Consumer (tid: %d) got the mutex and tries to read.", threadId);
 
+  // Condition variable loop.
+  // Wait for data to become available for reading.
   while (rb->count == 0) {
     bool       shouldShutdown;
     const bool ok = threadShouldShutdown(self, &shouldShutdown);
 
+    // If we couldn't get the shut down state -> Exit with error.
     if (!ok) {
+      // Release the mutex because the condition variable had reacquired it.
       if (pthread_mutex_unlock(&rb->mutex) != 0) {
         return RB_FAILURE_TO_UNLOCK_MUTEX;
       }
@@ -213,11 +243,15 @@ RingBufferStatusCode ringBufferRead(
       return RB_FAILURE_TO_DETERMINE_SHUTDOWN_STATE;
     }
 
+    // If we successfully got the shut down state and it indicates that
+    // we should shut down -> Shut down.
     if (shouldShutdown) {
+      // Release the mutex because the condition variable had reacquired it.
       if (pthread_mutex_unlock(&rb->mutex) != 0) {
         return RB_FAILURE_TO_UNLOCK_MUTEX;
       }
 
+      // Indicate that the thread should shut down.
       return RB_THREAD_SHOULD_SHUTDOWN;
     }
 
@@ -226,13 +260,15 @@ RingBufferStatusCode ringBufferRead(
       "read.",
       threadId);
 
+    // Wait on the condition variable.
     if (pthread_cond_wait(&rb->conditionVariable, &rb->mutex) != 0) {
       return RB_FAILURE_TO_WAIT_ON_CONDVAR;
     }
   }
 
+  // Read a byte.
   const byte byteJustRead = *rb->out;
-  --rb->count;
+  --rb->count; // Now there's one fewer byte to read.
   advancePointer(rb, &rb->out);
 
   RB_PRINTLN(
@@ -244,6 +280,7 @@ RingBufferStatusCode ringBufferRead(
     return RB_FAILURE_TO_UNLOCK_MUTEX;
   }
 
+  // Wake every thread that's waiting on the condition variable.
   if (pthread_cond_broadcast(&rb->conditionVariable) != 0) {
     return RB_FAILURE_TO_SIGNAL_CONDVAR;
   }
@@ -261,6 +298,8 @@ RingBufferStatusCode ringBufferShutdown(RingBuffer* ringBuffer)
 {
   RingBufferImpl* rb = impl(ringBuffer);
 
+  // Wake all the threads that wait on the condition variable.
+  // This way they will reexamine their shut down state as soon as possible.
   if (pthread_cond_broadcast(&rb->conditionVariable) != 0) {
     return RB_FAILURE_TO_SIGNAL_CONDVAR;
   }

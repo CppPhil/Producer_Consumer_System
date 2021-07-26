@@ -8,12 +8,21 @@
 #include "ring_buffer.h"
 #include "sleep_thread.h"
 
+/*!
+ * \brief Function to free threads (producers or consumers).
+ * \param threads The array of threads to free.
+ * \param elementCount The size of `threads` in elements.
+ * \param exitStatusNonSuccessfulErrorMessage The error message to print when a thread indicates failure through its exit status code.
+ * \param failureToFreeErrorMessage The error message to print when freeing a thread fails.
+ * \return true on success; otherwise false.
+ **/
 static bool freeThreads(
   Thread**    threads,
   int32_t     elementCount,
   const char* exitStatusNonSuccessfulErrorMessage,
   const char* failureToFreeErrorMessage)
 {
+  // If the pointer is null -> do nothing (that's okay)
   if (threads == NULL) { return true; }
 
   bool success = true;
@@ -43,12 +52,29 @@ static bool freeThreads(
   return success;
 }
 
+/*!
+ * \brief Global variable that will hold the last signal emitted.
+ *        Should only ever be 0 (the default value) or SIGINT
+ *        which is the only signal for which the signal handler
+ *        shall be registered.
+ **/
 volatile sig_atomic_t gSignalStatus = 0;
 
+/*!
+ * \brief The signal handler for this application.
+ * \param signal The signal that was emitted (should be SIGINT).
+ **/
 static void signalHandler(int signal) { gSignalStatus = signal; }
 
+/*!
+ * \brief The entry point of this application.
+ * \param argc The count of command line arguments.
+ * \param argv The command line arguments.
+ * \return EXIT_SUCCESS on success; otherwise EXIT_FAILURE.
+ **/
 int main(int argc, char** argv)
 {
+  // Install the signal handler for SIGINT (e.g., when CTRL + C is pressed)
   signal(SIGINT, &signalHandler);
 
   const CmdArgs commandLineArguments = parseCmdArgs(argc, argv);
@@ -92,20 +118,27 @@ int main(int argc, char** argv)
     ++threadId;
   }
 
+  // Have the main thread wait for SIGINT to be emitted.
   while (gSignalStatus != SIGINT) { sleepThread(/* seconds */ 1); }
 
+  // When the user has pressed CTRL + C -> shutdown the threads.
   printf("Shutdown of threads was requested.\n");
 
   bool couldShutdownThreads = true;
 
+  // Request the producers to shut down.
   for (int32_t prod = 0; prod < commandLineArguments.producerCount; ++prod) {
     couldShutdownThreads = threadRequestShutdown(producers[prod]);
   }
 
+  // Request the consumers to shut down.
   for (int32_t cons = 0; cons < commandLineArguments.consumerCount; ++cons) {
     couldShutdownThreads = threadRequestShutdown(consumers[cons]);
   }
 
+  // Tell the ring buffer to shut down.
+  // This will wake all threads sleeping on the ring buffer's condition variable
+  // and tell them to shut down.
   statusCode = ringBufferShutdown(ringBuffer);
 
   if (RB_FAILURE(statusCode)) { goto error; }

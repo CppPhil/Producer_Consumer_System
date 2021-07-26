@@ -6,20 +6,35 @@
 #include "ring_buffer.h"
 #include "thread.h"
 
+/*!
+ * \brief Thread implementation type.
+ **/
 typedef struct {
-  pthread_t       handle;
-  bool            shouldShutDown;
-  pthread_mutex_t mutex;
+  pthread_t       handle; /*!< The pthread handle */
+  bool            shouldShutDown; /*!< The shutdown state */
+  pthread_mutex_t mutex; /*!< Mutex to protect `shouldShutDown */
 } ThreadImpl;
 
+/*!
+ * \brief Argument to the actual thread function.
+ **/
 typedef struct {
-  ThreadFunction function;
-  RingBuffer*    ringBuffer;
-  int32_t        sleepTimeSeconds;
-  int            id;
-  Thread*        self;
+  ThreadFunction function; /*!< The thread function to run */
+  RingBuffer*    ringBuffer; /*!< The ring buffer */
+  int32_t        sleepTimeSeconds; /*!< Sleep time */
+  int            id; /*!< The thread ID */
+  Thread*        self; /*!< Pointer to the thread itself */
 } ThreadArgument;
 
+/*!
+ * \brief Creates a thread argument.
+ * \param function The thread function.
+ * \param ringBuffer The ring buffer.
+ * \param sleepTimeSeconds The sleep time.
+ * \param id The thread ID.
+ * \param self The thread itself.
+ * \return The thread argument created on success; otherwise NULL.
+ **/
 static ThreadArgument* threadArgumentCreate(
   ThreadFunction function,
   RingBuffer*    ringBuffer,
@@ -40,17 +55,29 @@ static ThreadArgument* threadArgumentCreate(
   return argument;
 }
 
+/*!
+ * \brief Frees a thread argument.
+ * \param argument The thread argument to free.
+ **/
 static void threadArgumentFree(ThreadArgument* argument) { free(argument); }
 
 static Thread* opaque(ThreadImpl* thread) { return (Thread*)thread; }
 
 static ThreadImpl* impl(Thread* thread) { return (ThreadImpl*)thread; }
 
+/*!
+ * \brief The actual thread routine.
+ * \param argument The void* argument.
+ * \return The void* return value.
+ **/
 static void* startRoutine(void* argument)
 {
   ThreadArgument* arg = (ThreadArgument*)argument;
+
+  // Run the thread function.
   const int       threadExitStatus
     = arg->function(arg->ringBuffer, arg->sleepTimeSeconds, arg->id, arg->self);
+
   threadArgumentFree(arg);
   return (void*)threadExitStatus;
 }
