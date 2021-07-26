@@ -1,5 +1,3 @@
-Spawn the producer and consumer threads.
-
-Have a controller thread.
+Implement shut down.
 
 Make this run on GNU/Linux.

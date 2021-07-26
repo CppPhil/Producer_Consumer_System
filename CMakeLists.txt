@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
 
-enable_testing()
-
 project(consumer_producer C)
 
 set(CMAKE_C_STANDARD 99)
@@ -32,7 +30,7 @@ set(
 
 add_executable(${APP_NAME} ${HEADERS} ${SOURCES})
 
-target_compile_definitions(${APP_NAME} PRIVATE TESTING)
+target_compile_definitions(${APP_NAME} PRIVATE RB_IO)
 
 target_include_directories(
   ${APP_NAME} 

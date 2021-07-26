@@ -12,7 +12,7 @@ consumerThreadFunction(RingBuffer* ringBuffer, int32_t sleepTimeSeconds, int id)
     const RingBufferStatusCode statusCode
       = ringBufferRead(ringBuffer, &byteJustRead);
 
-    printf("Consumer (tide: %d) just read %c.\n", id, (char)byteJustRead);
+    printf("Consumer (tid: %d) just read %c.\n", id, (char)byteJustRead);
 
     if (RB_FAILURE(statusCode)) { return EXIT_FAILURE; }
 

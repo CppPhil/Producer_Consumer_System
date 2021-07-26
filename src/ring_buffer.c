@@ -1,8 +1,15 @@
+#include <stdio.h>
 #include <stdlib.h>
 
 #include <pthread.h>
 
 #include "ring_buffer.h"
+
+#ifdef RB_IO
+#define RB_PRINTLN(fmtStr, ...) printf("RingBuffer: " fmtStr "\n", __VA_ARGS__)
+#else
+#define RB_PRINTLN(...) (void)(__VA_ARGS__)
+#endif
 
 const char* ringBufferStatusCodeToString(RingBufferStatusCode statusCode)
 {
@@ -114,7 +121,13 @@ RingBufferStatusCode ringBufferWrite(RingBuffer* ringBuffer, byte toWrite)
 
   if (pthread_mutex_lock(&rb->mutex) != 0) { return RB_FAILURE_TO_LOCK_MUTEX; }
 
+  RB_PRINTLN("A thread got the mutex and tries to write %c", toWrite);
+
   while (rb->count >= rb->bufferSize) {
+    RB_PRINTLN(
+      "A thread has to wait for space to become free, trying to write %c",
+      toWrite);
+
     if (pthread_cond_wait(&rb->conditionVariable, &rb->mutex) != 0) {
       return RB_FAILURE_TO_WAIT_ON_CONDVAR;
     }
@@ -132,6 +145,8 @@ RingBufferStatusCode ringBufferWrite(RingBuffer* ringBuffer, byte toWrite)
     return RB_FAILURE_TO_SIGNAL_CONDVAR;
   }
 
+  RB_PRINTLN("Write done. Broadcast condition variable");
+
   return RB_OK;
 }
 
@@ -141,7 +156,12 @@ RingBufferStatusCode ringBufferRead(RingBuffer* ringBuffer, byte* byteRead)
 
   if (pthread_mutex_lock(&rb->mutex) != 0) { return RB_FAILURE_TO_LOCK_MUTEX; }
 
+  RB_PRINTLN("A thread got the mutex and tries to read.");
+
   while (rb->count == 0) {
+    RB_PRINTLN(
+      "A thread has to wait for data to be written while trying to read.");
+
     if (pthread_cond_wait(&rb->conditionVariable, &rb->mutex) != 0) {
       return RB_FAILURE_TO_WAIT_ON_CONDVAR;
     }
@@ -158,6 +178,8 @@ RingBufferStatusCode ringBufferRead(RingBuffer* ringBuffer, byte* byteRead)
   if (pthread_cond_broadcast(&rb->conditionVariable) != 0) {
     return RB_FAILURE_TO_SIGNAL_CONDVAR;
   }
+
+  RB_PRINTLN("Read %c. Broadcast condition variable.", byteJustRead);
 
   *byteRead = byteJustRead;
   return RB_OK;
