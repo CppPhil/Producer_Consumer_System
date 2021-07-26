@@ -160,3 +160,6 @@ $RECYCLE.BIN/
 
 # build directory
 build
+
+# docs directory
+docs
