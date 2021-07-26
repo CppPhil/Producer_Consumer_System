@@ -11,10 +11,8 @@ typedef int (*ThreadFunction)(RingBuffer* ringBuffer, int32_t sleepTimeSeconds);
 
 Thread* threadCreate(
   ThreadFunction function,
-  RingBuffer* ringBuffer,
-  int32_t sleepTimeSeconds);
+  RingBuffer*    ringBuffer,
+  int32_t        sleepTimeSeconds);
 
-bool threadFree(
-  Thread* thread,
-  int* threadExitStatus);
+bool threadFree(Thread* thread, int* threadExitStatus);
 #endif /* INCG_THREAD_H */

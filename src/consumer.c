@@ -3,16 +3,16 @@
 #include "consumer.h"
 #include "sleep_thread.h"
 
-static int consumerThreadFunction(RingBuffer* ringBuffer, int32_t sleepTimeSeconds)
+static int consumerThreadFunction(
+  RingBuffer* ringBuffer,
+  int32_t     sleepTimeSeconds)
 {
   for (;;) {
-    byte byteJustRead;
+    byte                       byteJustRead;
     const RingBufferStatusCode statusCode
       = ringBufferRead(ringBuffer, &byteJustRead);
 
-    if (RB_FAILURE(statusCode)) {
-      return EXIT_FAILURE;
-    }
+    if (RB_FAILURE(statusCode)) { return EXIT_FAILURE; }
 
     sleepThread(sleepTimeSeconds);
   }
