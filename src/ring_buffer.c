@@ -115,17 +115,23 @@ static void advancePointer(RingBufferImpl* rb, byte** ptr)
   }
 }
 
-RingBufferStatusCode ringBufferWrite(RingBuffer* ringBuffer, byte toWrite)
+RingBufferStatusCode
+ringBufferWrite(RingBuffer* ringBuffer, byte toWrite, int threadId)
 {
   RingBufferImpl* rb = impl(ringBuffer);
 
   if (pthread_mutex_lock(&rb->mutex) != 0) { return RB_FAILURE_TO_LOCK_MUTEX; }
 
-  RB_PRINTLN("A thread got the mutex and tries to write %c", toWrite);
+  RB_PRINTLN(
+    "Producer (tid: %d) got the mutex and tries to write %c",
+    threadId,
+    toWrite);
 
   while (rb->count >= rb->bufferSize) {
     RB_PRINTLN(
-      "A thread has to wait for space to become free, trying to write %c",
+      "Producer (tid: %d) has to wait for space to become free, trying to "
+      "write %c",
+      threadId,
       toWrite);
 
     if (pthread_cond_wait(&rb->conditionVariable, &rb->mutex) != 0) {
@@ -137,7 +143,10 @@ RingBufferStatusCode ringBufferWrite(RingBuffer* ringBuffer, byte toWrite)
   ++rb->count;
   advancePointer(rb, &rb->in);
 
-  RB_PRINTLN("Incremented count. There are now %zu bytes to read.", rb->count);
+  RB_PRINTLN(
+    "Producer (tid: %d) incremented count. There are now %zu bytes to read.",
+    threadId,
+    rb->count);
 
   if (pthread_mutex_unlock(&rb->mutex) != 0) {
     return RB_FAILURE_TO_UNLOCK_MUTEX;
@@ -147,22 +156,26 @@ RingBufferStatusCode ringBufferWrite(RingBuffer* ringBuffer, byte toWrite)
     return RB_FAILURE_TO_SIGNAL_CONDVAR;
   }
 
-  RB_PRINTLN("Write done. Broadcast condition variable");
+  RB_PRINTLN(
+    "Producer (tid: %d): Write done. Broadcast condition variable", threadId);
 
   return RB_OK;
 }
 
-RingBufferStatusCode ringBufferRead(RingBuffer* ringBuffer, byte* byteRead)
+RingBufferStatusCode
+ringBufferRead(RingBuffer* ringBuffer, byte* byteRead, int threadId)
 {
   RingBufferImpl* rb = impl(ringBuffer);
 
   if (pthread_mutex_lock(&rb->mutex) != 0) { return RB_FAILURE_TO_LOCK_MUTEX; }
 
-  RB_PRINTLN("A thread got the mutex and tries to read.");
+  RB_PRINTLN("Consumer (tid: %d) got the mutex and tries to read.", threadId);
 
   while (rb->count == 0) {
     RB_PRINTLN(
-      "A thread has to wait for data to be written while trying to read.");
+      "Consumer (tid: %d) has to wait for data to be written while trying to "
+      "read.",
+      threadId);
 
     if (pthread_cond_wait(&rb->conditionVariable, &rb->mutex) != 0) {
       return RB_FAILURE_TO_WAIT_ON_CONDVAR;
@@ -173,7 +186,10 @@ RingBufferStatusCode ringBufferRead(RingBuffer* ringBuffer, byte* byteRead)
   --rb->count;
   advancePointer(rb, &rb->out);
 
-  RB_PRINTLN("Decremented count. There are now %zu bytes to read.", rb->count);
+  RB_PRINTLN(
+    "Consumer (tid: %d) decremented count. There are now %zu bytes to read.",
+    threadId,
+    rb->count);
 
   if (pthread_mutex_unlock(&rb->mutex) != 0) {
     return RB_FAILURE_TO_UNLOCK_MUTEX;
@@ -183,7 +199,10 @@ RingBufferStatusCode ringBufferRead(RingBuffer* ringBuffer, byte* byteRead)
     return RB_FAILURE_TO_SIGNAL_CONDVAR;
   }
 
-  RB_PRINTLN("Read %c. Broadcast condition variable.", byteJustRead);
+  RB_PRINTLN(
+    "Consumer (tid: %d): Read %c. Broadcast condition variable.",
+    threadId,
+    byteJustRead);
 
   *byteRead = byteJustRead;
   return RB_OK;

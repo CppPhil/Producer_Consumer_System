@@ -30,7 +30,9 @@ RingBufferStatusCode ringBufferCreate(
 
 RingBufferStatusCode ringBufferFree(RingBuffer* ringBuffer);
 
-RingBufferStatusCode ringBufferWrite(RingBuffer* ringBuffer, byte toWrite);
+RingBufferStatusCode
+ringBufferWrite(RingBuffer* ringBuffer, byte toWrite, int threadId);
 
-RingBufferStatusCode ringBufferRead(RingBuffer* ringBuffer, byte* byteRead);
+RingBufferStatusCode
+ringBufferRead(RingBuffer* ringBuffer, byte* byteRead, int threadId);
 #endif /* INCG_INCG_RING_BUFFER_H */

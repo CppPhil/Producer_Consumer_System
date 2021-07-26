@@ -10,7 +10,7 @@ consumerThreadFunction(RingBuffer* ringBuffer, int32_t sleepTimeSeconds, int id)
   for (;;) {
     byte                       byteJustRead;
     const RingBufferStatusCode statusCode
-      = ringBufferRead(ringBuffer, &byteJustRead);
+      = ringBufferRead(ringBuffer, &byteJustRead, id);
 
     printf("Consumer (tid: %d) just read %c.\n", id, (char)byteJustRead);
 

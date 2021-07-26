@@ -25,7 +25,7 @@ producerThreadFunction(RingBuffer* ringBuffer, int32_t sleepTimeSeconds, int id)
       = (id & 1) == 0 ? alphabet[index] : toUpper(alphabet[index]);
 
     const RingBufferStatusCode statusCode
-      = ringBufferWrite(ringBuffer, byteToWrite);
+      = ringBufferWrite(ringBuffer, byteToWrite, id);
 
     printf("Producer (tid: %d) just wrote %c.\n", id, byteToWrite);
 
