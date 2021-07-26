@@ -1,3 +1,7 @@
+In source TODOs
+
 Implement shut down.
+
+Try to simplify it.
 
 Make this run on GNU/Linux.

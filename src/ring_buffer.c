@@ -137,6 +137,8 @@ RingBufferStatusCode ringBufferWrite(RingBuffer* ringBuffer, byte toWrite)
   ++rb->count;
   advancePointer(rb, &rb->in);
 
+  RB_PRINTLN("Incremented count. There are now %zu bytes to read.", rb->count);
+
   if (pthread_mutex_unlock(&rb->mutex) != 0) {
     return RB_FAILURE_TO_UNLOCK_MUTEX;
   }
@@ -170,6 +172,8 @@ RingBufferStatusCode ringBufferRead(RingBuffer* ringBuffer, byte* byteRead)
   const byte byteJustRead = *rb->out;
   --rb->count;
   advancePointer(rb, &rb->out);
+
+  RB_PRINTLN("Decremented count. There are now %zu bytes to read.", rb->count);
 
   if (pthread_mutex_unlock(&rb->mutex) != 0) {
     return RB_FAILURE_TO_UNLOCK_MUTEX;
