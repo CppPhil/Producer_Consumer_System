@@ -12,12 +12,14 @@ typedef struct {
   ThreadFunction function;
   RingBuffer*    ringBuffer;
   int32_t        sleepTimeSeconds;
+  int            id;
 } ThreadArgument;
 
 static ThreadArgument* threadArgumentCreate(
   ThreadFunction function,
   RingBuffer*    ringBuffer,
-  int32_t        sleepTimeSeconds)
+  int32_t        sleepTimeSeconds,
+  int            id)
 {
   ThreadArgument* argument = malloc(sizeof(ThreadArgument));
 
@@ -26,6 +28,7 @@ static ThreadArgument* threadArgumentCreate(
   argument->function         = function;
   argument->ringBuffer       = ringBuffer;
   argument->sleepTimeSeconds = sleepTimeSeconds;
+  argument->id               = id;
 
   return argument;
 }
@@ -40,7 +43,7 @@ static void* startRoutine(void* argument)
 {
   ThreadArgument* arg = (ThreadArgument*)argument;
   const int       threadExitStatus
-    = arg->function(arg->ringBuffer, arg->sleepTimeSeconds);
+    = arg->function(arg->ringBuffer, arg->sleepTimeSeconds, arg->id);
   threadArgumentFree(arg);
   return (void*)threadExitStatus;
 }
@@ -48,14 +51,15 @@ static void* startRoutine(void* argument)
 Thread* threadCreate(
   ThreadFunction function,
   RingBuffer*    ringBuffer,
-  int32_t        sleepTimeSeconds)
+  int32_t        sleepTimeSeconds,
+  int            id)
 {
   ThreadImpl* thread = malloc(sizeof(ThreadImpl));
 
   if (thread == NULL) { return NULL; }
 
   ThreadArgument* argument
-    = threadArgumentCreate(function, ringBuffer, sleepTimeSeconds);
+    = threadArgumentCreate(function, ringBuffer, sleepTimeSeconds, id);
 
   if (argument == NULL) {
     free(thread);

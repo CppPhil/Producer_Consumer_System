@@ -1,12 +1,12 @@
 #include <stddef.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "producer.h"
 #include "sleep_thread.h"
 
-static int producerThreadFunction(
-  RingBuffer* ringBuffer,
-  int32_t     sleepTimeSeconds)
+static int
+producerThreadFunction(RingBuffer* ringBuffer, int32_t sleepTimeSeconds, int id)
 {
   static const char   alphabet[]   = "abcdefghijklmnopqrstuvwxyz";
   static const size_t alphabetSize = sizeof(alphabet) - 1;
@@ -15,7 +15,9 @@ static int producerThreadFunction(
 
   for (;;) {
     const RingBufferStatusCode statusCode
-      = ringBufferWrite(ringBuffer, alphabet[index]);
+      = ringBufferWrite(ringBuffer, (byte)alphabet[index]);
+
+    printf("Producer (tid: %d) just wrote %c.\n", id, alphabet[index]);
 
     if (RB_FAILURE(statusCode)) { return EXIT_FAILURE; }
 
@@ -29,7 +31,8 @@ static int producerThreadFunction(
   return EXIT_SUCCESS;
 }
 
-Thread* producerCreate(RingBuffer* ringBuffer, int32_t sleepTimeSeconds)
+Thread* producerCreate(RingBuffer* ringBuffer, int32_t sleepTimeSeconds, int id)
 {
-  return threadCreate(&producerThreadFunction, ringBuffer, sleepTimeSeconds);
+  return threadCreate(
+    &producerThreadFunction, ringBuffer, sleepTimeSeconds, id);
 }
