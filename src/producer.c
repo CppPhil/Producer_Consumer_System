@@ -56,8 +56,9 @@ static int producerThreadFunction(
     const RingBufferStatusCode statusCode
       = ringBufferWrite(ringBuffer, byteToWrite, id, self);
 
-    // If shutdown is requested and the thread was sleeping in the condition variable
-    // of the ring buffer, then it will return with RB_THREAD_SHOULD_SHUTDOWN
+    // If shutdown is requested and the thread was sleeping in the condition
+    // variable of the ring buffer, then it will return with
+    // RB_THREAD_SHOULD_SHUTDOWN
     if (statusCode == RB_THREAD_SHOULD_SHUTDOWN) { break; }
 
     // On failure -> exit with failure.

@@ -10,20 +10,20 @@
  * \brief Thread implementation type.
  **/
 typedef struct {
-  pthread_t       handle; /*!< The pthread handle */
+  pthread_t       handle;         /*!< The pthread handle */
   bool            shouldShutDown; /*!< The shutdown state */
-  pthread_mutex_t mutex; /*!< Mutex to protect `shouldShutDown */
+  pthread_mutex_t mutex;          /*!< Mutex to protect `shouldShutDown` */
 } ThreadImpl;
 
 /*!
  * \brief Argument to the actual thread function.
  **/
 typedef struct {
-  ThreadFunction function; /*!< The thread function to run */
-  RingBuffer*    ringBuffer; /*!< The ring buffer */
+  ThreadFunction function;         /*!< The thread function to run */
+  RingBuffer*    ringBuffer;       /*!< The ring buffer */
   int32_t        sleepTimeSeconds; /*!< Sleep time */
-  int            id; /*!< The thread ID */
-  Thread*        self; /*!< Pointer to the thread itself */
+  int            id;               /*!< The thread ID */
+  Thread*        self;             /*!< Pointer to the thread itself */
 } ThreadArgument;
 
 /*!
@@ -75,7 +75,7 @@ static void* startRoutine(void* argument)
   ThreadArgument* arg = (ThreadArgument*)argument;
 
   // Run the thread function.
-  const int       threadExitStatus
+  const int threadExitStatus
     = arg->function(arg->ringBuffer, arg->sleepTimeSeconds, arg->id, arg->self);
 
   threadArgumentFree(arg);

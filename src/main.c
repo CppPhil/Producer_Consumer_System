@@ -12,8 +12,11 @@
  * \brief Function to free threads (producers or consumers).
  * \param threads The array of threads to free.
  * \param elementCount The size of `threads` in elements.
- * \param exitStatusNonSuccessfulErrorMessage The error message to print when a thread indicates failure through its exit status code.
- * \param failureToFreeErrorMessage The error message to print when freeing a thread fails.
+ * \param exitStatusNonSuccessfulErrorMessage The error message to print when a
+ *                                            thread indicates failure through
+ *                                            its exit status code.
+ * \param failureToFreeErrorMessage The error message to print when freeing
+ *                                  a thread fails.
  * \return true on success; otherwise false.
  **/
 static bool freeThreads(

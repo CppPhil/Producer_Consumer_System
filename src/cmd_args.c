@@ -27,7 +27,8 @@ static bool isDigit(char character)
 /*!
  * \brief Parses a number out of a string.
  * \param string The string to parse.
- * \param number Output parameter for the number that has been parsed out of the string.
+ * \param number Output parameter for the number that has been parsed out of the
+ *               string.
  * \return true if the function exits successfully; otherwise false.
  * \warning The return value must be checked before *number may be accessed.
  **/

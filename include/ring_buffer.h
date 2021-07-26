@@ -95,7 +95,7 @@ RingBufferStatusCode ringBufferRead(
  * \brief Function used by the main thread to shut down the ring buffer.
  * \param ringBuffer The ring buffer to shut down.
  * \return The status code.
- * 
+ *
  * The main thread will call this function to have the threads wake up
  * that are waiting on the condition variable of the ring buffer
  * so that they exit.

@@ -158,7 +158,8 @@ RingBufferStatusCode ringBufferWrite(
 
     // If we couldn't query the shutdown state -> error.
     if (!ok) {
-      // Give back the mutex, because the condition variable will have reacquired it.
+      // Give back the mutex, because the condition variable will have
+      // reacquired it.
       if (pthread_mutex_unlock(&rb->mutex) != 0) {
         return RB_FAILURE_TO_UNLOCK_MUTEX;
       }

@@ -29,9 +29,10 @@ Thread* threadCreate(
 /*!
  * \brief Frees the given thread.
  * \param thread The thread to free.
- * \param threadExitStatus Output parameter to write the thread's exit status code to.
+ * \param threadExitStatus Output parameter to write the thread's exit status
+ *                         code to.
  * \return true on success; false otherwise.
- * 
+ *
  * Joins and then frees the given thread.
  **/
 bool threadFree(Thread* thread, int* threadExitStatus);
@@ -46,7 +47,8 @@ bool threadRequestShutdown(Thread* thread);
 /*!
  * \brief Query a thread's shutdown state.
  * \param thread The thread to get the shutdown state of.
- * \param shouldShutDown will be true if the thread should shut down; otherwise false. Will only be valid if true is returned.
+ * \param shouldShutDown will be true if the thread should shut down; otherwise
+ *                       false. Will only be valid if true is returned.
  * \return true on success; otherwise false.
  **/
 bool threadShouldShutdown(Thread* thread, bool* shouldShutDown);
