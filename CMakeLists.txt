@@ -14,13 +14,21 @@ set(
   HEADERS
   include/byte.h
   include/cmd_args.h
-  include/ring_buffer.h)
+  include/consumer.h
+  include/producer.h
+  include/ring_buffer.h
+  include/sleep_thread.h
+  include/thread.h)
 
 set(
   SOURCES
   src/cmd_args.c
+  src/consumer.c
   src/main.c
-  src/ring_buffer.c)
+  src/producer.c
+  src/ring_buffer.c
+  src/sleep_thread.c
+  src/thread.c)
 
 add_executable(${APP_NAME} ${HEADERS} ${SOURCES})
 
@@ -40,5 +48,6 @@ if (WIN32)
   target_link_libraries(
     ${APP_NAME}
     PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/build/PTHREADS-BUILT/lib/pthreadVC3.lib)
+    ${CMAKE_CURRENT_SOURCE_DIR}/build/PTHREADS-BUILT/lib/pthreadVC3.lib
+    Kernel32.lib)
 endif()
