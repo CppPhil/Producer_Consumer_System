@@ -10,7 +10,8 @@
  *                         every iteration.
  * \param id The thread ID.
  * \return The thread created.
- * \warning The return value must be freed using `threadFree` when it is no longer needed.
+ * \warning The return value must be freed using `threadFree` when it is no
+ *          longer needed.
  * \sa threadFree
  **/
 Thread*
