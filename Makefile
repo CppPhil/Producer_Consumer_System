@@ -20,3 +20,8 @@ sleep_thread.o: src/sleep_thread.c include/sleep_thread.h
 	$(CC) -I$(INCLUDE) $(CFLAGS) -c src/sleep_thread.c
 thread.o: src/thread.c include/thread.h
 	$(CC) -I$(INCLUDE) $(CFLAGS) -c src/thread.c
+
+.PHONY: clean
+
+clean:
+	rm -f *.o producer_consumer_system_app
