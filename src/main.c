@@ -20,39 +20,41 @@
  * \return true on success; otherwise false.
  **/
 static bool freeThreads(
-  Thread**    threads,
-  int32_t     elementCount,
-  const char* exitStatusNonSuccessfulErrorMessage,
-  const char* failureToFreeErrorMessage)
+    Thread **   threads,
+    int32_t     elementCount,
+    const char *exitStatusNonSuccessfulErrorMessage,
+    const char *failureToFreeErrorMessage)
 {
-  // If the pointer is null -> do nothing (that's okay)
-  if (threads == NULL) { return true; }
-
-  bool success = true;
-
-  for (int32_t i = 0; i < elementCount; ++i) {
-    int        threadExitStatus;
-    const bool couldFree = threadFree(threads[i], &threadExitStatus);
-
-    if (couldFree) {
-      if (threadExitStatus != EXIT_SUCCESS) {
-        fprintf(
-          stderr,
-          "%s %d.\n",
-          exitStatusNonSuccessfulErrorMessage,
-          threadExitStatus);
-        success = false;
-      }
+    // If the pointer is null -> do nothing (that's okay)
+    if (threads == NULL) {
+        return true;
     }
-    else {
-      fprintf(stderr, "%s\n", failureToFreeErrorMessage);
-      success = false;
+
+    bool success = true;
+
+    for (int32_t i = 0; i < elementCount; ++i) {
+        int        threadExitStatus;
+        const bool couldFree = threadFree(threads[i], &threadExitStatus);
+
+        if (couldFree) {
+            if (threadExitStatus != EXIT_SUCCESS) {
+                fprintf(
+                    stderr,
+                    "%s %d.\n",
+                    exitStatusNonSuccessfulErrorMessage,
+                    threadExitStatus);
+                success = false;
+            }
+        }
+        else {
+            fprintf(stderr, "%s\n", failureToFreeErrorMessage);
+            success = false;
+        }
     }
-  }
 
-  free(threads);
+    free(threads);
 
-  return success;
+    return success;
 }
 
 /*!
@@ -67,7 +69,10 @@ volatile sig_atomic_t gSignalStatus = 0;
  * \brief The signal handler for this application.
  * \param signal The signal that was emitted (should be SIGINT).
  **/
-static void signalHandler(int signal) { gSignalStatus = signal; }
+static void signalHandler(int signal)
+{
+    gSignalStatus = signal;
+}
 
 /*!
  * \brief The entry point of this application.
@@ -75,135 +80,153 @@ static void signalHandler(int signal) { gSignalStatus = signal; }
  * \param argv The command line arguments.
  * \return EXIT_SUCCESS on success; otherwise EXIT_FAILURE.
  **/
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
-  // Install the signal handler for SIGINT (e.g., when CTRL + C is pressed)
-  signal(SIGINT, &signalHandler);
+    // Install the signal handler for SIGINT (e.g., when CTRL + C is pressed)
+    signal(SIGINT, &signalHandler);
 
-  const CmdArgs commandLineArguments = parseCmdArgs(argc, argv);
+    const CmdArgs commandLineArguments = parseCmdArgs(argc, argv);
 
-  if (!commandLineArguments.isOk) { return EXIT_FAILURE; }
+    if (!commandLineArguments.isOk) {
+        return EXIT_FAILURE;
+    }
 
-  Thread**             producers      = NULL;
-  Thread**             consumers      = NULL;
-  RingBuffer*          ringBuffer     = NULL;
-  const size_t         ringBufferSize = 10;
-  RingBufferStatusCode statusCode
-    = ringBufferCreate(ringBufferSize, &ringBuffer);
+    Thread **            producers      = NULL;
+    Thread **            consumers      = NULL;
+    RingBuffer *         ringBuffer     = NULL;
+    const size_t         ringBufferSize = 10;
+    RingBufferStatusCode statusCode
+        = ringBufferCreate(ringBufferSize, &ringBuffer);
 
-  if (RB_FAILURE(statusCode)) { goto error; }
+    if (RB_FAILURE(statusCode)) {
+        goto error;
+    }
 
-  producers = calloc(commandLineArguments.producerCount, sizeof(Thread*));
+    producers = calloc(commandLineArguments.producerCount, sizeof(Thread *));
 
-  if (producers == NULL) { goto error; }
+    if (producers == NULL) {
+        goto error;
+    }
 
-  int threadId = 1;
+    int threadId = 1;
 
-  for (int32_t prod = 0; prod < commandLineArguments.producerCount; ++prod) {
-    producers[prod] = producerCreate(
-      ringBuffer, commandLineArguments.producerSleepTime, threadId);
+    for (int32_t prod = 0; prod < commandLineArguments.producerCount; ++prod) {
+        producers[prod] = producerCreate(
+            ringBuffer, commandLineArguments.producerSleepTime, threadId);
 
-    if (producers[prod] == NULL) { goto error; }
+        if (producers[prod] == NULL) {
+            goto error;
+        }
 
-    ++threadId;
-  }
+        ++threadId;
+    }
 
-  consumers = calloc(commandLineArguments.consumerCount, sizeof(Thread*));
+    consumers = calloc(commandLineArguments.consumerCount, sizeof(Thread *));
 
-  if (consumers == NULL) { goto error; }
+    if (consumers == NULL) {
+        goto error;
+    }
 
-  for (int32_t cons = 0; cons < commandLineArguments.consumerCount; ++cons) {
-    consumers[cons] = consumerCreate(
-      ringBuffer, commandLineArguments.consumerSleepTime, threadId);
+    for (int32_t cons = 0; cons < commandLineArguments.consumerCount; ++cons) {
+        consumers[cons] = consumerCreate(
+            ringBuffer, commandLineArguments.consumerSleepTime, threadId);
 
-    if (consumers[cons] == NULL) { goto error; }
+        if (consumers[cons] == NULL) {
+            goto error;
+        }
 
-    ++threadId;
-  }
+        ++threadId;
+    }
 
-  // Have the main thread wait for SIGINT to be emitted.
-  while (gSignalStatus != SIGINT) { sleepThread(/* seconds */ 1); }
+    // Have the main thread wait for SIGINT to be emitted.
+    while (gSignalStatus != SIGINT) {
+        sleepThread(/* seconds */ 1);
+    }
 
-  // When the user has pressed CTRL + C -> shutdown the threads.
-  printf("Shutdown of threads was requested.\n");
+    // When the user has pressed CTRL + C -> shutdown the threads.
+    printf("Shutdown of threads was requested.\n");
 
-  bool couldShutdownThreads = true;
+    bool couldShutdownThreads = true;
 
-  // Request the producers to shut down.
-  for (int32_t prod = 0; prod < commandLineArguments.producerCount; ++prod) {
-    couldShutdownThreads = threadRequestShutdown(producers[prod]);
-  }
+    // Request the producers to shut down.
+    for (int32_t prod = 0; prod < commandLineArguments.producerCount; ++prod) {
+        couldShutdownThreads = threadRequestShutdown(producers[prod]);
+    }
 
-  // Request the consumers to shut down.
-  for (int32_t cons = 0; cons < commandLineArguments.consumerCount; ++cons) {
-    couldShutdownThreads = threadRequestShutdown(consumers[cons]);
-  }
+    // Request the consumers to shut down.
+    for (int32_t cons = 0; cons < commandLineArguments.consumerCount; ++cons) {
+        couldShutdownThreads = threadRequestShutdown(consumers[cons]);
+    }
 
-  // Tell the ring buffer to shut down.
-  // This will wake all threads sleeping on the ring buffer's condition variable
-  // and tell them to shut down.
-  statusCode = ringBufferShutdown(ringBuffer);
+    // Tell the ring buffer to shut down.
+    // This will wake all threads sleeping on the ring buffer's condition
+    // variable and tell them to shut down.
+    statusCode = ringBufferShutdown(ringBuffer);
 
-  if (RB_FAILURE(statusCode)) { goto error; }
+    if (RB_FAILURE(statusCode)) {
+        goto error;
+    }
 
-  if (!couldShutdownThreads) { goto error; }
+    if (!couldShutdownThreads) {
+        goto error;
+    }
 
-  int programExitStatus = EXIT_SUCCESS;
+    int programExitStatus = EXIT_SUCCESS;
 
-  if (!freeThreads(
+    if (!freeThreads(
+            consumers,
+            commandLineArguments.consumerCount,
+            "Consumer exited with",
+            "Could not free consumer thread")) {
+        programExitStatus = EXIT_FAILURE;
+    }
+
+    if (!freeThreads(
+            producers,
+            commandLineArguments.producerCount,
+            "Producer exited with",
+            "Could not free producer thread")) {
+        programExitStatus = EXIT_FAILURE;
+    }
+
+    statusCode = ringBufferFree(ringBuffer);
+
+    if (RB_FAILURE(statusCode)) {
+        fprintf(
+            stderr,
+            "Could not free ring buffer: %s\n",
+            ringBufferStatusCodeToString(statusCode));
+        return EXIT_FAILURE;
+    }
+
+    return programExitStatus;
+
+error:
+    freeThreads(
         consumers,
         commandLineArguments.consumerCount,
         "Consumer exited with",
-        "Could not free consumer thread")) {
-    programExitStatus = EXIT_FAILURE;
-  }
-
-  if (!freeThreads(
+        "Could not free consumer thread");
+    freeThreads(
         producers,
         commandLineArguments.producerCount,
         "Producer exited with",
-        "Could not free producer thread")) {
-    programExitStatus = EXIT_FAILURE;
-  }
+        "Could not free producer thread");
 
-  statusCode = ringBufferFree(ringBuffer);
+    if (RB_FAILURE(statusCode)) {
+        fprintf(
+            stderr,
+            "An error occurred: %s\n",
+            ringBufferStatusCodeToString(statusCode));
+        statusCode = ringBufferFree(ringBuffer);
+    }
 
-  if (RB_FAILURE(statusCode)) {
-    fprintf(
-      stderr,
-      "Could not free ring buffer: %s\n",
-      ringBufferStatusCodeToString(statusCode));
+    if (RB_FAILURE(statusCode)) {
+        fprintf(
+            stderr,
+            "Could not free ring buffer: %s\n",
+            ringBufferStatusCodeToString(statusCode));
+    }
+
     return EXIT_FAILURE;
-  }
-
-  return programExitStatus;
-
-error:
-  freeThreads(
-    consumers,
-    commandLineArguments.consumerCount,
-    "Consumer exited with",
-    "Could not free consumer thread");
-  freeThreads(
-    producers,
-    commandLineArguments.producerCount,
-    "Producer exited with",
-    "Could not free producer thread");
-
-  if (RB_FAILURE(statusCode)) {
-    fprintf(
-      stderr,
-      "An error occurred: %s\n",
-      ringBufferStatusCodeToString(statusCode));
-    statusCode = ringBufferFree(ringBuffer);
-  }
-
-  if (RB_FAILURE(statusCode)) {
-    fprintf(
-      stderr,
-      "Could not free ring buffer: %s\n",
-      ringBufferStatusCodeToString(statusCode));
-  }
-
-  return EXIT_FAILURE;
 }

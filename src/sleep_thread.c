@@ -9,8 +9,8 @@
 void sleepThread(int32_t seconds)
 {
 #ifdef _WIN32
-  Sleep(/* dwMilliseconds */ (DWORD)(seconds * 1000));
+    Sleep(/* dwMilliseconds */ (DWORD)(seconds * 1000));
 #else
-  sleep((unsigned)seconds);
+    sleep((unsigned) seconds);
 #endif
 }

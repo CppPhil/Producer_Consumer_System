@@ -9,18 +9,18 @@
  * \brief Status codes returned by the ring buffer functions.
  **/
 typedef enum {
-  RB_OK, /*!< Indicates no failure */
-  RB_NOMEM,
-  RB_FAILURE_TO_INIT_MUTEX,
-  RB_FAILURE_TO_DESTROY_MUTEX,
-  RB_FAILURE_TO_LOCK_MUTEX,
-  RB_FAILURE_TO_UNLOCK_MUTEX,
-  RB_FAILURE_TO_INIT_CONDVAR,
-  RB_FAILURE_TO_DESTROY_CONDVAR,
-  RB_FAILURE_TO_WAIT_ON_CONDVAR,
-  RB_FAILURE_TO_SIGNAL_CONDVAR,
-  RB_THREAD_SHOULD_SHUTDOWN,
-  RB_FAILURE_TO_DETERMINE_SHUTDOWN_STATE
+    RB_OK, /*!< Indicates no failure */
+    RB_NOMEM,
+    RB_FAILURE_TO_INIT_MUTEX,
+    RB_FAILURE_TO_DESTROY_MUTEX,
+    RB_FAILURE_TO_LOCK_MUTEX,
+    RB_FAILURE_TO_UNLOCK_MUTEX,
+    RB_FAILURE_TO_INIT_CONDVAR,
+    RB_FAILURE_TO_DESTROY_CONDVAR,
+    RB_FAILURE_TO_WAIT_ON_CONDVAR,
+    RB_FAILURE_TO_SIGNAL_CONDVAR,
+    RB_THREAD_SHOULD_SHUTDOWN,
+    RB_FAILURE_TO_DETERMINE_SHUTDOWN_STATE
 } RingBufferStatusCode;
 
 /*!
@@ -40,7 +40,7 @@ typedef enum {
  * \param statusCode The enumerator to convert.
  * \return The corresponding string.
  **/
-const char* ringBufferStatusCodeToString(RingBufferStatusCode statusCode);
+const char *ringBufferStatusCodeToString(RingBufferStatusCode statusCode);
 
 typedef struct RingBufferOpaque RingBuffer;
 
@@ -53,15 +53,15 @@ typedef struct RingBufferOpaque RingBuffer;
  * \sa ringBufferFree
  **/
 RingBufferStatusCode ringBufferCreate(
-  size_t       byteCount,
-  RingBuffer** ringBuffer);
+    size_t       byteCount,
+    RingBuffer **ringBuffer);
 
 /*!
  * \brief Frees a ring buffer.
  * \param ringBuffer The ring buffer to free.
  * \return The status code.
  **/
-RingBufferStatusCode ringBufferFree(RingBuffer* ringBuffer);
+RingBufferStatusCode ringBufferFree(RingBuffer *ringBuffer);
 
 /*!
  * \brief Writes to the ring buffer.
@@ -72,10 +72,10 @@ RingBufferStatusCode ringBufferFree(RingBuffer* ringBuffer);
  * \return The status code.
  **/
 RingBufferStatusCode ringBufferWrite(
-  RingBuffer* ringBuffer,
-  byte        toWrite,
-  int         threadId,
-  Thread*     self);
+    RingBuffer *ringBuffer,
+    byte        toWrite,
+    int         threadId,
+    Thread *    self);
 
 /*!
  * \brief Reads from the ring buffer.
@@ -86,10 +86,10 @@ RingBufferStatusCode ringBufferWrite(
  * \return The status code.
  **/
 RingBufferStatusCode ringBufferRead(
-  RingBuffer* ringBuffer,
-  byte*       byteRead,
-  int         threadId,
-  Thread*     self);
+    RingBuffer *ringBuffer,
+    byte *      byteRead,
+    int         threadId,
+    Thread *    self);
 
 /*!
  * \brief Function used by the main thread to shut down the ring buffer.
@@ -100,5 +100,5 @@ RingBufferStatusCode ringBufferRead(
  * that are waiting on the condition variable of the ring buffer
  * so that they exit.
  **/
-RingBufferStatusCode ringBufferShutdown(RingBuffer* ringBuffer);
+RingBufferStatusCode ringBufferShutdown(RingBuffer *ringBuffer);
 #endif /* INCG_INCG_RING_BUFFER_H */

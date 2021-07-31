@@ -13,6 +13,6 @@
  *          when it is no longer needed.
  * \sa threadFree
  **/
-Thread*
-consumerCreate(RingBuffer* ringBuffer, int32_t sleepTimeSeconds, int id);
+Thread *
+consumerCreate(RingBuffer *ringBuffer, int32_t sleepTimeSeconds, int id);
 #endif /* INCG_CONSUMER_H */

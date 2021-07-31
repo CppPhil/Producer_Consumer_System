@@ -8,10 +8,10 @@ typedef struct RingBufferOpaque RingBuffer;
 typedef struct ThreadOpaque Thread;
 
 typedef int (*ThreadFunction)(
-  RingBuffer* ringBuffer,
-  int32_t     sleepTimeSeconds,
-  int         id,
-  Thread*     self);
+    RingBuffer *ringBuffer,
+    int32_t     sleepTimeSeconds,
+    int         id,
+    Thread *    self);
 
 /*!
  * \brief Creates a thread.
@@ -20,11 +20,11 @@ typedef int (*ThreadFunction)(
  * \param sleepTimeSeconds The sleep time.
  * \param id The thread ID.
  **/
-Thread* threadCreate(
-  ThreadFunction function,
-  RingBuffer*    ringBuffer,
-  int32_t        sleepTimeSeconds,
-  int            id);
+Thread *threadCreate(
+    ThreadFunction function,
+    RingBuffer *   ringBuffer,
+    int32_t        sleepTimeSeconds,
+    int            id);
 
 /*!
  * \brief Frees the given thread.
@@ -35,14 +35,14 @@ Thread* threadCreate(
  *
  * Joins and then frees the given thread.
  **/
-bool threadFree(Thread* thread, int* threadExitStatus);
+bool threadFree(Thread *thread, int *threadExitStatus);
 
 /*!
  * \brief Request shutdown of a thread.
  * \param thread The thread that should shut down.
  * \return true on success; otherwise false.
  **/
-bool threadRequestShutdown(Thread* thread);
+bool threadRequestShutdown(Thread *thread);
 
 /*!
  * \brief Query a thread's shutdown state.
@@ -51,5 +51,5 @@ bool threadRequestShutdown(Thread* thread);
  *                       false. Will only be valid if true is returned.
  * \return true on success; otherwise false.
  **/
-bool threadShouldShutdown(Thread* thread, bool* shouldShutDown);
+bool threadShouldShutdown(Thread *thread, bool *shouldShutDown);
 #endif /* INCG_THREAD_H */

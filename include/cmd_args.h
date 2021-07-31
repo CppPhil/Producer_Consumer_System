@@ -4,11 +4,11 @@
 #include <stdint.h>
 
 typedef struct {
-  bool    isOk; /*!< Must be checked before other members are accessed */
-  int32_t producerCount;
-  int32_t consumerCount;
-  int32_t producerSleepTime; /*!< in seconds */
-  int32_t consumerSleepTime; /*!< in seconds */
+    bool    isOk; /*!< Must be checked before other members are accessed */
+    int32_t producerCount;
+    int32_t consumerCount;
+    int32_t producerSleepTime; /*!< in seconds */
+    int32_t consumerSleepTime; /*!< in seconds */
 } CmdArgs;
 
 /*!
@@ -17,5 +17,5 @@ typedef struct {
  * \param argv The command line arguments from main.
  * \return The result parsed.
  **/
-CmdArgs parseCmdArgs(int argc, char** argv);
+CmdArgs parseCmdArgs(int argc, char **argv);
 #endif /* INCG_CMD_ARGS_H */
