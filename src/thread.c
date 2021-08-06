@@ -113,15 +113,16 @@ Thread *threadCreate(
         return NULL;
     }
 
-    if (pthread_create(&thread->handle, NULL, &startRoutine, argument) != 0) {
+    thread->shouldShutDown = false;
+
+    if (pthread_mutex_init(&thread->mutex, NULL) != 0) {
         threadArgumentFree(argument);
         free(thread);
         return NULL;
     }
 
-    thread->shouldShutDown = false;
-
-    if (pthread_mutex_init(&thread->mutex, NULL) != 0) {
+    if (pthread_create(&thread->handle, NULL, &startRoutine, argument) != 0) {
+        pthread_mutex_destroy(&thread->mutex);
         threadArgumentFree(argument);
         free(thread);
         return NULL;
