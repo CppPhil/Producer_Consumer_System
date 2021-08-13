@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 #include <pthread.h>
@@ -90,7 +91,9 @@ static void *startRoutine(void *argument)
         arg->ringBuffer, arg->sleepTimeSeconds, arg->id, arg->self);
 
     threadArgumentFree(arg);
-    return (void *) threadExitStatus;
+
+    /* cast to uintptr_t first to avoid warnings */
+    return (void *) (uintptr_t) threadExitStatus;
 }
 
 Thread *threadCreate(

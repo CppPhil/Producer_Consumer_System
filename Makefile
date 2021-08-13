@@ -1,6 +1,6 @@
 all: producer_consumer_system
 
-CC = gcc
+CC = clang
 INCLUDE = ./include
 CFLAGS = -Wall -std=c99 -pthread -DRB_IO
 

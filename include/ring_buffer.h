@@ -42,7 +42,10 @@ typedef enum {
  **/
 const char *ringBufferStatusCodeToString(RingBufferStatusCode statusCode);
 
-typedef struct RingBufferOpaque RingBuffer;
+/* typedef struct RingBufferOpaque RingBuffer; */
+/* This typedef is already exported by thread.h, because thread.h needs it and
+ * this file includes thread.h
+ */
 
 /*!
  * \brief Creates a ring buffer.
