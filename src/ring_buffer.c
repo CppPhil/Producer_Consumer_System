@@ -102,6 +102,7 @@ RingBufferStatusCode ringBufferCreate(size_t byteCount, RingBuffer **ringBuffer)
     }
 
     if (pthread_cond_init(&rb->conditionVariable, NULL) != 0) {
+        pthread_mutex_destroy(&rb->mutex);
         free(rb->buffer);
         free(rb);
         return RB_FAILURE_TO_INIT_CONDVAR;
@@ -121,6 +122,7 @@ RingBufferStatusCode ringBufferFree(RingBuffer *ringBuffer)
     }
 
     if (pthread_mutex_destroy(&rb->mutex) != 0) {
+        pthread_cond_destroy(&rb->conditionVariable);
         free(rb->buffer);
         free(rb);
         return RB_FAILURE_TO_DESTROY_MUTEX;
